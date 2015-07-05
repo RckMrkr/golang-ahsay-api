@@ -1,9 +1,8 @@
 package ahsay
 
 import (
-	"errors"
+	"encoding/xml"
 	"fmt"
-	"math"
 	"strconv"
 	"time"
 )
@@ -93,13 +92,13 @@ func (s ByteSize) String() string {
 		return fmt.Sprintf("%d%s", i, "B")
 	}
 
-	return fmt.Sprintf("%d%s", math.Mod(i, 1024), unit)
+	return fmt.Sprintf("%d%s", (i % 1024), unit)
 }
 
 func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var s string
 	d.DecodeElement(&s, &start)
-	i, err = strconv.parseInt(s, 10)
+	i, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return err
 	}
@@ -111,7 +110,7 @@ func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error
 type Boolean bool
 
 func (b Boolean) String() string {
-	t = b.(bool)
+	t := bool(b)
 	if t {
 		return "True"
 	} else {
@@ -119,7 +118,7 @@ func (b Boolean) String() string {
 	}
 }
 
-func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (size *Boolean) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var s string
 	d.DecodeElement(&s, &start)
 	if s == "Y" {
@@ -134,7 +133,7 @@ func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error
 type Status bool
 
 func (b Status) String() string {
-	t = b.(bool)
+	t := bool(b)
 	if t {
 		return "Enabled"
 	} else {
@@ -156,21 +155,22 @@ func (size *Status) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 type Timestamp time.Time
 
-func (s Timestamp) String() string {
-	s = b.(time.Time)
+func (t Timestamp) String() string {
+	s := time.Time(t)
 	return s.String()
 }
 
-func (s *Timestamp) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (t *Timestamp) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var s string
 	d.DecodeElement(&s, &start)
-	i, err = strconv.parseInt(s, 10)
+	i, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return err
 	}
-	sec := i / 1000                       // The time we get is in ms
-	ns := math.Mod(i, 1000) * 1000 * 1000 // ms to ns
+	sec := i / 1000                // The time we get is in ms
+	ns := (i % 1000) * 1000 * 1000 // ms to ns
 
-	*s = time.Unix(sec, ns)
+	time := time.Unix(sec, ns)
+	*t = Timestamp(time)
 	return nil
 }

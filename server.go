@@ -3,6 +3,7 @@ package ahsay
 import (
 	"encoding/xml"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -18,23 +19,23 @@ type Server interface {
 	Password() string
 }
 
-func request(s Server, data map[string]string, ep string, obj interface{}) <-chan Response {
-	r = make(chan interface{})
+func request(s Server, data map[string]string, ep string, obj interface{}) <-chan response {
+	c := make(chan response)
 
 	go func() {
 		url := createUrl(s, ep)
 		values := createValues(s, data)
 		body, err := callEndpoint(url, values)
 		if err != nil {
-			return response{Err: err}
+			c <- response{Err: err}
 		}
 
-		err = unmarshal(body, &obj)
+		obj, err = unmarshal(body, obj)
 
-		return response{Object: obj, Err: err}
+		c <- response{Object: obj, Err: err}
 	}()
 
-	return r
+	return c
 }
 
 func createUrl(s Server, ep string) string {
@@ -42,19 +43,28 @@ func createUrl(s Server, ep string) string {
 }
 
 func createValues(s Server, data map[string]string) (values url.Values) {
-	for k, v := range(data){
-		values.Add()
+	for k, v := range data {
+		values.Add(k, v)
 	}
 	values.Set("SysUser", s.Username())
 	values.Set("SysPwd", s.Password())
 	return
 }
 
-func callEndpoint(url string, values url.Values) string, error {
-	resp, err := http.PostForm(url, data)
-	return resp, err
+func callEndpoint(url string, values url.Values) ([]byte, error) {
+	resp, err := http.PostForm(url, values)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
 }
 
-func unmarshal(xml string, obj interface{}) interface {
-	// Missing
+func unmarshal(body []byte, obj interface{}) (interface{}, error) {
+	err := xml.Unmarshal(body, &obj)
+	return obj, err
 }

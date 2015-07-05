@@ -1,9 +1,5 @@
 package ahsay
 
-import (
-	"encoding/xml"
-)
-
 type UserList struct {
 	Users []User `xml:",attr"`
 }
@@ -58,10 +54,6 @@ type User struct {
 }
 
 func ListUsers(s Server, args map[string]string) <-chan UserList {
-	returnChan = make(chan UserList)
-	go func(){
-		body := <-request(s, data, ep)
-		object := UserList{}
-		_ := xml.
-	}()
+	returnChan := make(chan UserList)
+	return returnChan
 }
