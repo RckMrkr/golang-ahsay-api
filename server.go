@@ -39,7 +39,7 @@ func request(s Server, data map[string]string, ep string, obj interface{}) <-cha
 }
 
 func createUrl(s Server, ep string) string {
-	return fmt.Sprintf("%s/obs/api/", s.Host(), ep)
+	return fmt.Sprintf("%s/obs/api/%s", s.Host(), ep)
 }
 
 func createValues(s Server, data map[string]string) (values url.Values) {

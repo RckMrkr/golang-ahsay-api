@@ -3,6 +3,7 @@ package ahsay
 import (
 	"encoding/xml"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 )
@@ -10,8 +11,8 @@ import (
 type UserType int
 
 const (
-	PAID  UserType = iota + 1
-	TRIAL UserType = iota + 1
+	PAID UserType = iota + 1
+	TRIAL
 )
 
 func (t UserType) String() string {
@@ -41,7 +42,7 @@ type ClientType int
 
 const (
 	OBM ClientType = iota + 1
-	ACB ClientType = iota + 1
+	ACB
 )
 
 func (t ClientType) String() string {
@@ -67,32 +68,28 @@ func (t *ClientType) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	return nil
 }
 
-type ByteSize int
+type ByteSize int64
 
 func (s ByteSize) String() string {
-	i := int(s)
-	div := i / 1024
-	var unit string
-	switch div {
-	case 0:
-		unit = "B"
-	case 1:
-		unit = "KB"
-	case 2:
-		unit = "MB"
-	case 3:
-		unit = "GB"
-	case 4:
-		unit = "TB"
-	case 5:
-		unit = "PB"
-	case 6:
-		unit = "EB" // Think we are save for a while now
-	default:
-		return fmt.Sprintf("%d%s", i, "B")
+	prefixes := []string{"B", "KB", "MB", "GB", "TB", "PB"}
+	format := "%.2f %s"
+	value := float64(s)
+	var (
+		div     float64
+		divisor float64
+	)
+	for index, unit := range prefixes {
+		divisor = math.Pow(1024, float64(index))
+		div = value / divisor
+		if div > 1024 {
+			continue
+		}
+		if 1 == divisor {
+			break
+		}
+		return fmt.Sprintf(format, div, unit)
 	}
-
-	return fmt.Sprintf("%d%s", (i % 1024), unit)
+	return fmt.Sprintf(format, value, prefixes[0])
 }
 
 func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
