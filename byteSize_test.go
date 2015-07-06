@@ -10,6 +10,7 @@ import (
 func TestByteSizeString(t *testing.T) {
 	assert := assert.New(t)
 
+	// Try each standard case
 	s := ByteSize(943)
 	assert.Equal("943.00 B", fmt.Sprintf("%v", s))
 
@@ -30,6 +31,13 @@ func TestByteSizeString(t *testing.T) {
 
 	s = ByteSize(2305843009213693952)
 	assert.Equal("2305843009213693952.00 B", fmt.Sprintf("%v", s))
+
+	// Edge cases:
+	s = ByteSize(1024)
+	assert.Equal("1.00 KB", fmt.Sprintf("%v", s))
+
+	s = ByteSize(0)
+	assert.Equal("0.00 B", fmt.Sprintf("%v", s))
 }
 
 func TestByteSizeUnmarshalBytes(t *testing.T) {

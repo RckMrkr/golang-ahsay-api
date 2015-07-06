@@ -2,6 +2,7 @@ package ahsay
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -68,7 +69,7 @@ func (t *ClientType) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	return nil
 }
 
-type ByteSize int64
+type ByteSize uint64
 
 func (s ByteSize) String() string {
 	prefixes := []string{"B", "KB", "MB", "GB", "TB", "PB"}
@@ -81,13 +82,9 @@ func (s ByteSize) String() string {
 	for index, unit := range prefixes {
 		divisor = math.Pow(1024, float64(index))
 		div = value / divisor
-		if div > 1024 {
-			continue
+		if div < 1024 {
+			return fmt.Sprintf(format, div, unit)
 		}
-		if 1 == divisor {
-			break
-		}
-		return fmt.Sprintf(format, div, unit)
 	}
 	return fmt.Sprintf(format, value, prefixes[0])
 }
@@ -104,14 +101,32 @@ func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error
 	return nil
 }
 
-type Boolean bool
+type Boolean uint8
+
+const (
+	B_TRUE Boolean = iota + 1
+	B_FALSE
+)
 
 func (b Boolean) String() string {
-	t := bool(b)
-	if t {
+	switch b {
+	case B_TRUE:
 		return "True"
-	} else {
+	case B_FALSE:
 		return "False"
+	default:
+		return "Not set"
+	}
+}
+
+func (b Boolean) toBool() (bool, error) {
+	switch b {
+	case B_TRUE:
+		return true, nil
+	case B_FALSE:
+		return false, nil
+	default:
+		return false, errors.New("Boolean not set")
 	}
 }
 
@@ -119,22 +134,40 @@ func (size *Boolean) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	var s string
 	d.DecodeElement(&s, &start)
 	if s == "Y" {
-		*size = true
+		*size = B_TRUE
 	} else if s == "N" {
-		*size = false
+		*size = B_FALSE
 
 	}
 	return nil
 }
 
-type Status bool
+type Status uint8
+
+const (
+	S_ENABLED Status = iota + 1
+	S_SUSPENDED
+)
 
 func (b Status) String() string {
-	t := bool(b)
-	if t {
+	switch b {
+	case S_ENABLED:
 		return "Enabled"
-	} else {
+	case S_SUSPENDED:
 		return "Suspended"
+	default:
+		return "Status not set"
+	}
+}
+
+func (b Status) toBool() (bool, error) {
+	switch b {
+	case S_ENABLED:
+		return true, nil
+	case S_SUSPENDED:
+		return false, nil
+	default:
+		return false, errors.New("Status not set")
 	}
 }
 
@@ -142,9 +175,9 @@ func (size *Status) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var s string
 	d.DecodeElement(&s, &start)
 	if s == "ENABLE" {
-		*size = true
+		*size = S_ENABLED
 	} else if s == "SUSPENDED" {
-		*size = false
+		*size = S_SUSPENDED
 
 	}
 	return nil
