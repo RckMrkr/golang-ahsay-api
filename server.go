@@ -29,8 +29,7 @@ func request(s Server, data map[string]string, ep string, obj interface{}) <-cha
 		if err != nil {
 			c <- response{Err: err}
 		}
-
-		obj, err = unmarshal(body, obj)
+		xml.Unmarshal(body, &obj)
 
 		c <- response{Object: obj, Err: err}
 	}()
@@ -42,13 +41,14 @@ func createUrl(s Server, ep string) string {
 	return fmt.Sprintf("%s/obs/api/%s", s.Host(), ep)
 }
 
-func createValues(s Server, data map[string]string) (values url.Values) {
+func createValues(s Server, data map[string]string) url.Values {
+	values := make(url.Values)
 	for k, v := range data {
 		values.Add(k, v)
 	}
 	values.Set("SysUser", s.Username())
 	values.Set("SysPwd", s.Password())
-	return
+	return values
 }
 
 func callEndpoint(url string, values url.Values) ([]byte, error) {
@@ -62,9 +62,4 @@ func callEndpoint(url string, values url.Values) ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
-}
-
-func unmarshal(body []byte, obj interface{}) (interface{}, error) {
-	err := xml.Unmarshal(body, &obj)
-	return obj, err
 }

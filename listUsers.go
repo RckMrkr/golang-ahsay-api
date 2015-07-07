@@ -10,7 +10,7 @@ type Contact struct {
 }
 
 type User struct {
-	Username                     string     `xml:"LoginName,attr"`
+	Loginname                    string     `xml:",attr"`
 	Owner                        string     `xml:",attr"`
 	UserType                     UserType   `xml:",attr"`
 	ClientType                   ClientType `xml:",attr"`
