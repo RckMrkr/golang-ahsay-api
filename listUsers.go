@@ -13,7 +13,7 @@ type Contact struct {
 
 // User is a struct with properties for a specific user
 type User struct {
-	Loginname                    string     `xml:",attr"`
+	LoginName                    string     `xml:",attr"`
 	Owner                        string     `xml:",attr"`
 	UserType                     UserType   `xml:",attr"`
 	ClientType                   ClientType `xml:",attr"`
@@ -58,5 +58,6 @@ type User struct {
 
 // ListUsers calls the endpoint "ListUsers.do" on server s with argurments args and returns a channel for the response
 func ListUsers(s Server, args map[string]string) <-chan Response {
-	return request(s, args, "ListUsers.do", new(UserList))
+	url := createURL(s, "ListUsers.do")
+	return request(s, args, url, new(UserList))
 }

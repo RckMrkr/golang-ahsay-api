@@ -21,11 +21,10 @@ type Server interface {
 	Password() string
 }
 
-func request(s Server, data map[string]string, ep string, obj interface{}) <-chan Response {
+func request(s Server, data map[string]string, url string, obj interface{}) <-chan Response {
 	c := make(chan Response)
 
 	go func() {
-		url := createURL(s, ep)
 		values := createValues(s, data)
 		body, err := callEndpoint(url, values)
 		if err != nil {
