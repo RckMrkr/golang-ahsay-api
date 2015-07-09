@@ -3,9 +3,10 @@ package ahsay
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTimestampString(t *testing.T) {
@@ -20,13 +21,11 @@ func TestTimestampString(t *testing.T) {
 func TestTimestampUnmarshal(t *testing.T) {
 	assert := assert.New(t)
 	obj := struct {
-		Timestamp Timestamp
+		Timestamp Timestamp `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<Timestamp>1302687743242</Timestamp>
-	</body>
+	<body Timestamp="1302687743242" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
@@ -39,13 +38,11 @@ func TestTimestampUnmarshal(t *testing.T) {
 func TestTimestampUnmarshalInvalid(t *testing.T) {
 	assert := assert.New(t)
 	obj := struct {
-		Timestamp Timestamp
+		Timestamp Timestamp `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<Timestamp>Invalid input</Timestamp>
-	</body>
+	<body Timestamp="Invalid input" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)

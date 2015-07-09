@@ -3,8 +3,9 @@ package ahsay
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestByteSizeString(t *testing.T) {
@@ -43,13 +44,11 @@ func TestByteSizeString(t *testing.T) {
 func TestByteSizeUnmarshalBytes(t *testing.T) {
 	assert := assert.New(t)
 	obj := struct {
-		ByteSize ByteSize
+		ByteSize ByteSize `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<ByteSize>425</ByteSize>
-	</body>
+		<body ByteSize="425" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
@@ -59,13 +58,11 @@ func TestByteSizeUnmarshalBytes(t *testing.T) {
 func TestByteSizeUnmarshalInvalid(t *testing.T) {
 	assert := assert.New(t)
 	obj := struct {
-		ByteSize ByteSize
+		ByteSize ByteSize `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<ByteSize>fdsa</ByteSize>
-	</body>
+		<body ByteSize="Invalid value" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)

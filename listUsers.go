@@ -1,14 +1,17 @@
 package ahsay
 
+// UserList is a slice of list user
 type UserList struct {
-	Users []User `xml:",attr"`
+	Users []User
 }
 
+// Contact is the contact info for a user
 type Contact struct {
 	Name  string `xml:",attr"`
 	Email string `xml:",attr"`
 }
 
+// User is a struct with properties for a specific user
 type User struct {
 	Loginname                    string     `xml:",attr"`
 	Owner                        string     `xml:",attr"`
@@ -33,10 +36,10 @@ type User struct {
 	ExchangeMailboxQuota         Boolean    `xml:",attr"`
 	EnableNASClient              Boolean    `xml:",attr"`
 	EnableDeltaMerge             Boolean    `xml:",attr"`
-	EnableMsVm                   Boolean    `xml:",attr"`
-	MsVmQuota                    ByteSize   `xml:",attr"`
+	EnableMsVM                   Boolean    `xml:",EnableMsVM,attr"`
+	MsVMQuota                    ByteSize   `xml:",MsVmQuota,attr"`
 	EnableVMware                 Boolean    `xml:",attr"`
-	VmWareQuota                  ByteSize   `xml:",attr"`
+	VMWareQuota                  ByteSize   `xml:",VmWareQuota,attr"`
 	Bandwidth                    string     `xml:",attr"` // not sure of the format. using string to be safe
 	Notes                        string     `xml:",attr"`
 	Status                       Status     `xml:",attr"`
@@ -53,7 +56,7 @@ type User struct {
 	Contact                      Contact
 }
 
-func ListUsers(s Server, args map[string]string) <-chan UserList {
-	returnChan := make(chan UserList)
-	return returnChan
+// ListUsers calls the endpoint "ListUsers.do" on server s with argurments args and returns a channel for the response
+func ListUsers(s Server, args map[string]string) <-chan Response {
+	return request(s, args, "ListUsers.do", new(UserList))
 }

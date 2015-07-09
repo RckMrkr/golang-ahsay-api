@@ -3,18 +3,19 @@ package ahsay
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStatusString(t *testing.T) {
 	assert := assert.New(t)
 
 	// Try each standard case
-	s := S_ENABLED
+	s := StatusEnabled
 	assert.Equal("Enabled", fmt.Sprintf("%v", s))
 
-	s = S_SUSPENDED
+	s = StatusSuspended
 	assert.Equal("Suspended", fmt.Sprintf("%v", s))
 
 	s = *new(Status)
@@ -25,46 +26,40 @@ func TestStatusUnmarshalEnabled(t *testing.T) {
 	assert := assert.New(t)
 
 	obj := struct {
-		Status Status
+		Status Status `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<Status>ENABLE</Status>
-	</body>
+		<body Status="ENABLE" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
-	assert.Equal(S_ENABLED, obj.Status)
+	assert.Equal(StatusEnabled, obj.Status)
 }
 
 func TestStatusUnmarshalFalse(t *testing.T) {
 	assert := assert.New(t)
 
 	obj := struct {
-		Status Status
+		Status Status `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<Status>SUSPENDED</Status>
-	</body>
+		<body Status="SUSPENDED" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
-	assert.Equal(S_SUSPENDED, obj.Status)
+	assert.Equal(StatusSuspended, obj.Status)
 }
 
 func TestStatusUnmarshalInvalid(t *testing.T) {
 	assert := assert.New(t)
 	obj := struct {
-		Status Status
+		Status Status `xml:",attr"`
 	}{}
 
 	str := `
-	<body>
-		<Status>Invalid input</Status>
-	</body>
+		<body Status="Invalid input" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
@@ -74,11 +69,11 @@ func TestStatusUnmarshalInvalid(t *testing.T) {
 func TestStatusToBool(t *testing.T) {
 	assert := assert.New(t)
 
-	s, err := S_ENABLED.toBool()
+	s, err := StatusEnabled.toBool()
 	assert.Nil(err)
 	assert.True(s)
 
-	s, err = S_SUSPENDED.toBool()
+	s, err = StatusSuspended.toBool()
 	assert.Nil(err)
 	assert.False(s)
 

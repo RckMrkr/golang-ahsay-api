@@ -3,18 +3,19 @@ package ahsay
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBooleanString(t *testing.T) {
 	assert := assert.New(t)
 
 	// Try each standard case
-	s := B_TRUE
+	s := BooleanTrue
 	assert.Equal("True", fmt.Sprintf("%v", s))
 
-	s = B_FALSE
+	s = BooleanFalse
 	assert.Equal("False", fmt.Sprintf("%v", s))
 
 	s = *new(Boolean)
@@ -25,46 +26,40 @@ func TestBooleanUnmarshalTrue(t *testing.T) {
 	assert := assert.New(t)
 
 	obj := struct {
-		Boolean Boolean
+		Boolean Boolean `xml:"Boolean,attr"`
 	}{}
 
 	str := `
-	<body>
-		<Boolean>Y</Boolean>
-	</body>
+	<body Boolean="Y" />
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
-	assert.Equal(B_TRUE, obj.Boolean)
+	assert.Equal(BooleanTrue, obj.Boolean)
 }
 
 func TestBooleanUnmarshalFalse(t *testing.T) {
 	assert := assert.New(t)
 
 	obj := struct {
-		Boolean Boolean
+		Boolean Boolean `xml:"Boolean,attr"`
 	}{}
 
 	str := `
-	<body>
-		<Boolean>N</Boolean>
-	</body>
+	<body Boolean="N">
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
-	assert.Equal(B_FALSE, obj.Boolean)
+	assert.Equal(BooleanFalse, obj.Boolean)
 }
 
 func TestBooleanUnmarshalInvalid(t *testing.T) {
 	assert := assert.New(t)
 	obj := struct {
-		Boolean Boolean
+		Boolean Boolean `xml:"Boolean,attr"`
 	}{}
 
 	str := `
-	<body>
-		<Boolean>Invalid input</Boolean>
-	</body>
+	<body Boolean="Invalid input">
 	`
 	b := []byte(str)
 	xml.Unmarshal(b, &obj)
@@ -74,15 +69,15 @@ func TestBooleanUnmarshalInvalid(t *testing.T) {
 func TestBooleanToBool(t *testing.T) {
 	assert := assert.New(t)
 
-	b, err := B_TRUE.toBool()
+	b, err := BooleanTrue.ToBool()
 	assert.Nil(err)
 	assert.True(b)
 
-	b, err = B_FALSE.toBool()
+	b, err = BooleanFalse.ToBool()
 	assert.Nil(err)
 	assert.False(b)
 
-	_, err = (*new(Boolean)).toBool()
+	_, err = (*new(Boolean)).ToBool()
 	if assert.NotNil(err) {
 		assert.Error(err)
 	}

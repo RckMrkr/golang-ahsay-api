@@ -2,11 +2,12 @@ package ahsay
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type servertest bool
@@ -42,7 +43,7 @@ func TestCreateUrl(t *testing.T) {
 	assert := assert.New(t)
 
 	s := servertest(true)
-	assert.Equal("http://example.org:8080/obs/api/listUsers.do", createUrl(s, "listUsers.do"))
+	assert.Equal("http://example.org:8080/obs/api/listUsers.do", createURL(s, "listUsers.do"))
 }
 
 func TestCallEndpoint(t *testing.T) {

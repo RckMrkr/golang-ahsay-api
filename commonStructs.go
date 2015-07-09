@@ -9,72 +9,77 @@ import (
 	"time"
 )
 
+// UserType is used to idenify the type of user
 type UserType int
 
+// Paid is the UserType for users who have paid
+// Trial is the UserType for users who are still on trial
 const (
-	PAID UserType = iota + 1
-	TRIAL
+	Paid UserType = iota + 1
+	Trial
 )
 
 func (t UserType) String() string {
 	switch t {
-	case PAID:
+	case Paid:
 		return "Paid"
-	case TRIAL:
+	case Trial:
 		return "Trial"
 	default:
 		return "User type not set"
 	}
 }
 
-func (t *UserType) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	d.DecodeElement(&s, &start)
-	if s == "PAID" {
-		*t = PAID
-	} else if s == "TRIAL" {
-		*t = TRIAL
+// UnmarshalXMLAttr ensures UserType implements the xml.UnmarshalerAttr interface
+func (t *UserType) UnmarshalXMLAttr(attr xml.Attr) error {
+	if attr.Value == "PAID" {
+		*t = Paid
+	} else if attr.Value == "TRIAL" {
+		*t = Trial
 	}
 
 	return nil
 }
 
+// ClientType is used to idenify the type of client
 type ClientType int
 
+// Obm is the ClientType for Client with OBM version
+// Acb is the ClientType for Client with ACB version
 const (
-	OBM ClientType = iota + 1
-	ACB
+	Obm ClientType = iota + 1
+	Acb
 )
 
 func (t ClientType) String() string {
 	switch t {
-	case OBM:
+	case Obm:
 		return "OBM"
-	case ACB:
+	case Acb:
 		return "ACB"
 	default:
 		return "Client type not set"
 	}
 }
 
-func (t *ClientType) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	d.DecodeElement(&s, &start)
-	if s == "ACB" {
-		*t = ACB
-	} else if s == "OBM" {
-		*t = OBM
+// UnmarshalXMLAttr ensures ClientType implements the xml.UnmarshalerAttr interface
+func (t *ClientType) UnmarshalXMLAttr(attr xml.Attr) error {
+	if attr.Value == "ACB" {
+		*t = Acb
+	} else if attr.Value == "OBM" {
+		*t = Obm
 	}
 
 	return nil
 }
 
+// ByteSize is a representation of an amount of bytes
 type ByteSize uint64
 
-func (s ByteSize) String() string {
+func (size ByteSize) String() string {
 	prefixes := []string{"B", "KB", "MB", "GB", "TB", "PB"}
 	format := "%.2f %s"
-	value := float64(s)
+	value := float64(size)
 	var (
 		div     float64
 		divisor float64
@@ -89,10 +94,9 @@ func (s ByteSize) String() string {
 	return fmt.Sprintf(format, value, prefixes[0])
 }
 
-func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	d.DecodeElement(&s, &start)
-	i, err := strconv.ParseInt(s, 10, 64)
+// UnmarshalXMLAttr ensures ByteSize implements the xml.UnmarshalerAttr interface
+func (size *ByteSize) UnmarshalXMLAttr(attr xml.Attr) error {
+	i, err := strconv.ParseInt(attr.Value, 10, 64)
 	if err != nil {
 		return err
 	}
@@ -101,88 +105,94 @@ func (size *ByteSize) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error
 	return nil
 }
 
+// Boolean is used as a faux class to unmarshal boolean values
 type Boolean uint8
 
+// BooleanTrue represents a boolean value of true
+// BooleanFalse represents a boolean value of false
 const (
-	B_TRUE Boolean = iota + 1
-	B_FALSE
+	BooleanTrue Boolean = iota + 1
+	BooleanFalse
 )
 
 func (b Boolean) String() string {
 	switch b {
-	case B_TRUE:
+	case BooleanTrue:
 		return "True"
-	case B_FALSE:
+	case BooleanFalse:
 		return "False"
 	default:
 		return "Not set"
 	}
 }
 
-func (b Boolean) toBool() (bool, error) {
+// ToBool is able to transform the Boolean to a bool
+func (b Boolean) ToBool() (bool, error) {
 	switch b {
-	case B_TRUE:
+	case BooleanTrue:
 		return true, nil
-	case B_FALSE:
+	case BooleanFalse:
 		return false, nil
 	default:
 		return false, errors.New("Boolean not set")
 	}
 }
 
-func (size *Boolean) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	d.DecodeElement(&s, &start)
-	if s == "Y" {
-		*size = B_TRUE
-	} else if s == "N" {
-		*size = B_FALSE
+// UnmarshalXMLAttr ensures Boolean implements the xml.UnmarshalerAttr interface
+func (b *Boolean) UnmarshalXMLAttr(attr xml.Attr) error {
+	if attr.Value == "Y" {
+		*b = BooleanTrue
+	} else if attr.Value == "N" {
+		*b = BooleanFalse
 
 	}
 	return nil
 }
 
+// Status is used to idenify the status of a user
 type Status uint8
 
+// StatusEnabled means a user is activated
+// StatusSuspended means a user is deactivated
 const (
-	S_ENABLED Status = iota + 1
-	S_SUSPENDED
+	StatusEnabled Status = iota + 1
+	StatusSuspended
 )
 
-func (b Status) String() string {
-	switch b {
-	case S_ENABLED:
+func (status Status) String() string {
+	switch status {
+	case StatusEnabled:
 		return "Enabled"
-	case S_SUSPENDED:
+	case StatusSuspended:
 		return "Suspended"
 	default:
 		return "Status not set"
 	}
 }
 
-func (b Status) toBool() (bool, error) {
-	switch b {
-	case S_ENABLED:
+func (status Status) toBool() (bool, error) {
+	switch status {
+	case StatusEnabled:
 		return true, nil
-	case S_SUSPENDED:
+	case StatusSuspended:
 		return false, nil
 	default:
 		return false, errors.New("Status not set")
 	}
 }
 
-func (size *Status) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	d.DecodeElement(&s, &start)
-	if s == "ENABLE" {
-		*size = S_ENABLED
-	} else if s == "SUSPENDED" {
-		*size = S_SUSPENDED
+// UnmarshalXMLAttr ensures Status implements the xml.UnmarshalerAttr interface
+func (status *Status) UnmarshalXMLAttr(attr xml.Attr) error {
+	if attr.Value == "ENABLE" {
+		*status = StatusEnabled
+	} else if attr.Value == "SUSPENDED" {
+		*status = StatusSuspended
 
 	}
 	return nil
 }
 
+// Timestamp is a faux class to enable unmarshalling of time.Time cases
 type Timestamp time.Time
 
 func (t Timestamp) String() string {
@@ -190,10 +200,9 @@ func (t Timestamp) String() string {
 	return s.String()
 }
 
-func (t *Timestamp) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	d.DecodeElement(&s, &start)
-	i, err := strconv.ParseInt(s, 10, 64)
+// UnmarshalXMLAttr ensures Timestamp implements the xml.UnmarshalerAttr interface
+func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) error {
+	i, err := strconv.ParseInt(attr.Value, 10, 64)
 	if err != nil {
 		return err
 	}

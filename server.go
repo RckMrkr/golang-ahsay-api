@@ -8,36 +8,38 @@ import (
 	"net/url"
 )
 
-type response struct {
+// Response is a way to communicate via channels both objects and possible errors
+type Response struct {
 	Object interface{}
 	Err    error
 }
 
+// Server defines the properties a request need to talk to a specific server
 type Server interface {
 	Host() string // entire part before "path" - i.e. http://www.google:com:8080
 	Username() string
 	Password() string
 }
 
-func request(s Server, data map[string]string, ep string, obj interface{}) <-chan response {
-	c := make(chan response)
+func request(s Server, data map[string]string, ep string, obj interface{}) <-chan Response {
+	c := make(chan Response)
 
 	go func() {
-		url := createUrl(s, ep)
+		url := createURL(s, ep)
 		values := createValues(s, data)
 		body, err := callEndpoint(url, values)
 		if err != nil {
-			c <- response{Err: err}
+			c <- Response{Err: err}
 		}
 		xml.Unmarshal(body, &obj)
 
-		c <- response{Object: obj, Err: err}
+		c <- Response{Object: obj, Err: err}
 	}()
 
 	return c
 }
 
-func createUrl(s Server, ep string) string {
+func createURL(s Server, ep string) string {
 	return fmt.Sprintf("%s/obs/api/%s", s.Host(), ep)
 }
 
