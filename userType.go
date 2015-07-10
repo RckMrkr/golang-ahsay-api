@@ -2,6 +2,7 @@ package ahsay
 
 import "encoding/xml"
 
+// UserType is used to keep track of the type of user
 type UserType int
 
 // Paid is the UserType for users who have paid

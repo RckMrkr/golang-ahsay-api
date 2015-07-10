@@ -1,8 +1,8 @@
 package ahsay
 
-// ClientType is used to idenify the type of client
 import "encoding/xml"
 
+// ClientType is used to idenify the type of client
 type ClientType int
 
 // Obm is the ClientType for Client with OBM version
