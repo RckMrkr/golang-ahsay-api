@@ -64,3 +64,28 @@ func TestCallEndpoint(t *testing.T) {
 	_, err = callEndpoint("invalid url", url.Values{})
 	assert.NotNil(err)
 }
+
+func TestRequest(t *testing.T) {
+	assert := assert.New(t)
+
+	s := "Check"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, s)
+	}))
+
+	defer ts.Close()
+	server := servertest(true)
+	r := <-request(server, make(map[string]string), ts.URL)
+
+	assert.Nil(r.Err)
+	assert.Equal([]byte(s), r.Body)
+}
+
+func TestRequestInvalid(t *testing.T) {
+	assert := assert.New(t)
+
+	server := servertest(true)
+	r := <-request(server, make(map[string]string), "http://this.must.be.invalid.xaz")
+
+	assert.NotNil(r.Err)
+}

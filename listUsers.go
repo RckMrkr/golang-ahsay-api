@@ -1,8 +1,10 @@
 package ahsay
 
+import "encoding/xml"
+
 // UserList is a slice of list user
 type UserList struct {
-	Users []User
+	Users []User `xml:"User"`
 }
 
 // Contact is the contact info for a user
@@ -33,13 +35,13 @@ type User struct {
 	EnableInFileDelta            Boolean    `xml:",attr"`
 	EnableShadowCopy             Boolean    `xml:",attr"`
 	EnableExchangeMailbox        Boolean    `xml:",attr"`
-	ExchangeMailboxQuota         Boolean    `xml:",attr"`
+	ExchangeMailboxQuota         ByteSize   `xml:",attr"`
 	EnableNASClient              Boolean    `xml:",attr"`
 	EnableDeltaMerge             Boolean    `xml:",attr"`
-	EnableMsVM                   Boolean    `xml:",EnableMsVM,attr"`
-	MsVMQuota                    ByteSize   `xml:",MsVmQuota,attr"`
+	EnableMsVM                   Boolean    `xml:"EnableMsVm,attr"`
+	MsVMQuota                    ByteSize   `xml:"MsVmQuota,attr"`
 	EnableVMware                 Boolean    `xml:",attr"`
-	VMWareQuota                  ByteSize   `xml:",VmWareQuota,attr"`
+	VMWareQuota                  ByteSize   `xml:"VmWareQuota,attr"`
 	Bandwidth                    string     `xml:",attr"` // not sure of the format. using string to be safe
 	Notes                        string     `xml:",attr"`
 	Status                       Status     `xml:",attr"`
@@ -53,11 +55,32 @@ type User struct {
 	Hostname                     string     `xml:",attr"`
 	FileSizeLimit                ByteSize   `xml:",attr"`
 	ExcludeNetworkShare          Boolean    `xml:",attr"`
-	Contact                      Contact
+	Contact                      []Contact
 }
 
 // ListUsers calls the endpoint "ListUsers.do" on server s with argurments args and returns a channel for the response
-func ListUsers(s Server, args map[string]string) <-chan Response {
+func ListUsers(s Server, args map[string]string) (<-chan UserList, <-chan error) {
 	url := createURL(s, "ListUsers.do")
-	return request(s, args, url, new(UserList))
+	return listUsers(s, args, url)
+}
+
+func listUsers(s Server, args map[string]string, url string) (<-chan UserList, <-chan error) {
+	c := request(s, args, url)
+	objChan := make(chan UserList)
+	errChan := make(chan error)
+	go func() {
+		r := <-c
+		if r.Err != nil {
+			errChan <- r.Err
+		}
+		obj := *new(UserList)
+		err := xml.Unmarshal(r.Body, &obj)
+		if err != nil {
+			errChan <- err
+		}
+		close(errChan)
+		objChan <- UserList(obj)
+	}()
+
+	return objChan, errChan
 }

@@ -1,7 +1,6 @@
 package ahsay
 
 import (
-	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,9 +8,9 @@ import (
 )
 
 // Response is a way to communicate via channels both objects and possible errors
-type Response struct {
-	Object interface{}
-	Err    error
+type response struct {
+	Body []byte
+	Err  error
 }
 
 // Server defines the properties a request need to talk to a specific server
@@ -21,18 +20,13 @@ type Server interface {
 	Password() string
 }
 
-func request(s Server, data map[string]string, url string, obj interface{}) <-chan Response {
-	c := make(chan Response)
+func request(s Server, data map[string]string, url string) <-chan response {
+	c := make(chan response)
 
 	go func() {
 		values := createValues(s, data)
 		body, err := callEndpoint(url, values)
-		if err != nil {
-			c <- Response{Err: err}
-		}
-		xml.Unmarshal(body, &obj)
-
-		c <- Response{Object: obj, Err: err}
+		c <- response{Body: body, Err: err}
 	}()
 
 	return c
