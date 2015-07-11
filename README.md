@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/RckMrkr/golang-ahsay-api.svg?branch=master)](https://travis-ci.org/RckMrkr/golang-ahsay-api)
 # golang-ahsay-api
 A Golang wrapper for Ahsay API
 
